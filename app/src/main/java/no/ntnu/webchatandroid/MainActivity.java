@@ -2,6 +2,8 @@ package no.ntnu.webchatandroid;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,11 +16,17 @@ import android.view.View;
 
 import java.util.ArrayList;
 
+import static java.lang.Thread.sleep;
+
 public class MainActivity extends AppCompatActivity {
 
     private LinearLayoutManager mLayoutManager;
-    private MyAdapter mAdapter;
-    private ArrayList<String> list;
+    private ChatRoomListAdapter mAdapter;
+    private ArrayList<ChatRoom> chatRooms;
+    private RestService restService;
+    private Thread listener;
+
+    private boolean running;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +34,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        listener = createListener();
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.addChatRoomBtn);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -41,24 +54,36 @@ public class MainActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         chatRoomList.setLayoutManager(mLayoutManager);
 
-        list = new ArrayList<>();
-        list.add("TEST1");
-        list.add("TEST2");
-        list.add("TEST3");
+        chatRooms = new ArrayList<>();
 
-        mAdapter = new MyAdapter(list);
+        mAdapter = new ChatRoomListAdapter(this, chatRooms);
         chatRoomList.setAdapter(mAdapter);
 
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                list.add("TEST1");
-                list.add("TEST2");
-                list.add("TEST3");
-                mAdapter.notifyDataSetChanged();
-            }
-        }, 1000);
+        restService = new RestService();
+        chatRooms.addAll(restService.getAllChatRooms());
+
+        mAdapter.notifyDataSetChanged();
+        listener.start();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(!running) {
+            listener.start();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        running = false;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        running = false;
     }
 
     @Override
@@ -81,5 +106,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private Thread createListener() {
+        return new Thread(new Runnable() {
+            @Override
+            public void run() {
+                running = true;
+                final Handler handler = new Handler(Looper.getMainLooper());
+                while(running) {
+                    chatRooms.clear();
+                    chatRooms.addAll(restService.getAllChatRooms());
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    try {
+                        sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 }

@@ -29,7 +29,7 @@
         tools:showIn="@layout/activity_main">
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/chatRoomList"
+            android:id="@+id/chatList"
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
