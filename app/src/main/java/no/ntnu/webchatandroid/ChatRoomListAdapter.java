@@ -13,7 +13,7 @@ import java.util.ArrayList;
 public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapter.MyViewHolder> {
 
     private ArrayList<ChatRoom> mDataset;
-    private AppCompatActivity activity;
+    private MainActivity activity;
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView mTextView;
@@ -23,7 +23,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
         }
     }
 
-    public ChatRoomListAdapter(AppCompatActivity activity, ArrayList<ChatRoom> myDataset) {
+    public ChatRoomListAdapter(MainActivity activity, ArrayList<ChatRoom> myDataset) {
         this.activity = activity;
         mDataset = myDataset;
     }
@@ -47,6 +47,7 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 myIntent.putExtra("ID", chatRoom.getId());
                 myIntent.putExtra("NAME", chatRoom.getName());
                 myIntent.putExtra("PASSWORD", chatRoom.getPassword());
+                myIntent.putExtra("USER", activity.getUser().getName());
                 activity.startActivity(myIntent);
             }
         });

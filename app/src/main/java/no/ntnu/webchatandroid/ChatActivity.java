@@ -3,10 +3,13 @@ package no.ntnu.webchatandroid;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 
@@ -17,9 +20,11 @@ public class ChatActivity extends AppCompatActivity {
     private LinearLayoutManager mLayoutManager;
     private ChatListAdapter mAdapter;
     private ChatRoom chatRoom;
+    private User user;
     private ArrayList<Message> messages;
     private RestService restService;
     private Thread listener;
+    private EditText chatInput;
 
     private boolean running;
 
@@ -31,6 +36,9 @@ public class ChatActivity extends AppCompatActivity {
 
         listener = createListener();
 
+        user = new User();
+        user.setName(getIntent().getStringExtra("USER"));
+        chatInput = findViewById(R.id.chatInput);
 
         chatRoom = new ChatRoom(
                 getIntent().getIntExtra("ID", 0),
@@ -52,24 +60,21 @@ public class ChatActivity extends AppCompatActivity {
         messages.addAll(restService.getAllMessagesInChatRoom(chatRoom));
 
         mAdapter.notifyDataSetChanged();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.submitMessage);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Message message = new Message();
+                message.setMessage(chatInput.getText().toString());
+                message.setRoomNumber(chatRoom.getId());
+                message.setUserName(user.getName());
+                restService.submitMessage(message, chatRoom);
+            }
+        });
+
+
         listener.start();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        running = false;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        running = false;
     }
 
     private Thread createListener() {

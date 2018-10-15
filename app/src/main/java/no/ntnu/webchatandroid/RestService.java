@@ -52,25 +52,21 @@ public class RestService {
             URL object = new URL(api + urlParam);
             HttpURLConnection con = (HttpURLConnection) object.openConnection();
 
-            con.setDoOutput(true);
-            con.setDoInput(true);
-            con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            con.setConnectTimeout(5000);
-            con.setRequestProperty("Accept", "application/json");
             con.setRequestMethod("POST");
-
-            JSONObject body = new JSONObject();
-            body.put("name", "test");
-            body.put("password", "test");
+            con.setRequestProperty("Content-Type", "application/json");
+            con.setDoOutput(true);
 
             OutputStream os = con.getOutputStream();
-            os.write(body.toString().getBytes("UTF-8"));
+            os.write(json.toString().getBytes());
             os.flush();
+
+            int responseCode = con.getResponseCode();
+            if(responseCode == 200) {
+                System.out.println("Reached");
+            }
         } catch (ProtocolException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
@@ -117,5 +113,17 @@ public class RestService {
         }
         //System.out.println(chatRooms);
         return chatRooms;
+    }
+
+    public void submitMessage(Message message, ChatRoom chatRoom) {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("message", message.getMessage());
+            json.put("roomNumber", message.getRoomNumber());
+            json.put("userName", message.getUserName());
+            sendPost("addNewMessageToChatRoom", json);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

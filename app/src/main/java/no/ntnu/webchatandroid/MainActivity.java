@@ -1,18 +1,21 @@
 package no.ntnu.webchatandroid;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.StrictMode;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 
@@ -26,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private RestService restService;
     private Thread listener;
 
+    private User user = null;
+
     private boolean running;
 
     @Override
@@ -36,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         listener = createListener();
+        user = new User();
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -44,8 +50,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                addChatRoomDialog();
             }
         });
 
@@ -64,26 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         mAdapter.notifyDataSetChanged();
         listener.start();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(!running) {
-            listener.start();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        running = false;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        running = false;
+        showLogin();
     }
 
     @Override
@@ -131,5 +118,94 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void showLogin() {
+        // get two_input_dialog.xmlialog.xml view
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptsView = li.inflate(R.layout.two_input_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                this);
+
+        // set two_input_dialog.xmlialog.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText loginUsername = (EditText) promptsView
+                .findViewById(R.id.inputOne);
+        final EditText loginPassword = (EditText) promptsView
+                .findViewById(R.id.inputTwo);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // get user input and set it to result
+                                // edit text
+                                user.setName(loginUsername.getText().toString());
+                                user.setPassword(loginPassword.getText().toString());
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    private void addChatRoomDialog() {
+        // get two_input_dialog.xmlialog.xml view
+        LayoutInflater li = LayoutInflater.from(this);
+        View promptsView = li.inflate(R.layout.two_input_dialog, null);
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                this);
+
+        // set two_input_dialog.xmlialog.xml to alertdialog builder
+        alertDialogBuilder.setView(promptsView);
+
+        final EditText chatRoomName = (EditText) promptsView
+                .findViewById(R.id.inputOne);
+        final EditText chatRoomPassword = (EditText) promptsView
+                .findViewById(R.id.inputTwo);
+
+        // set dialog message
+        alertDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // get user input and set it to result
+                                // edit text
+                                restService.addNewChatRoom(
+                                        chatRoomName.getText().toString(),
+                                        chatRoomPassword.getText().toString());
+                            }
+                        })
+                .setNegativeButton("Cancel",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+    public User getUser() {
+        return user;
     }
 }
