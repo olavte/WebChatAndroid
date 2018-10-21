@@ -1,8 +1,8 @@
 package no.ntnu.webchatandroid;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +15,11 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
     private ArrayList<ChatRoom> mDataset;
     private MainActivity activity;
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView mTextView;
-        public MyViewHolder(TextView v) {
+    static class MyViewHolder extends RecyclerView.ViewHolder {
+        TextView mTextView;
+        MyViewHolder(View v) {
             super(v);
-            mTextView = v;
+            mTextView = itemView.findViewById(R.id.name);
         }
     }
 
@@ -30,10 +30,8 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
 
     @Override
     public ChatRoomListAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        TextView v = (TextView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.my_text_view, parent, false);
-        MyViewHolder vh = new MyViewHolder(v);
-        return vh;
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.chat_room, parent, false);
+        return new ChatRoomListAdapter.MyViewHolder(view);
     }
 
     @Override
@@ -49,6 +47,21 @@ public class ChatRoomListAdapter extends RecyclerView.Adapter<ChatRoomListAdapte
                 myIntent.putExtra("PASSWORD", chatRoom.getPassword());
                 myIntent.putExtra("USER", activity.getUser().getName());
                 activity.startActivity(myIntent);
+            }
+        });
+        holder.mTextView.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    Intent myIntent = new Intent(activity, ChatActivity.class);
+                    myIntent.putExtra("ID", chatRoom.getId());
+                    myIntent.putExtra("NAME", chatRoom.getName());
+                    myIntent.putExtra("PASSWORD", chatRoom.getPassword());
+                    myIntent.putExtra("USER", activity.getUser().getName());
+                    activity.startActivity(myIntent);
+                    return true;
+                }
+                return false;
             }
         });
     }

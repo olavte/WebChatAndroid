@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
@@ -102,14 +103,17 @@ public class MainActivity extends AppCompatActivity {
                 running = true;
                 final Handler handler = new Handler(Looper.getMainLooper());
                 while(running) {
-                    chatRooms.clear();
-                    chatRooms.addAll(restService.getAllChatRooms());
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    });
+                    List<ChatRoom> restList = restService.getAllChatRooms();
+                    if(!chatRooms.containsAll(restList)) {
+                        chatRooms.clear();
+                        chatRooms.addAll(restList);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
                     try {
                         sleep(1000);
                     } catch (InterruptedException e) {
@@ -121,14 +125,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showLogin() {
-        // get two_input_dialog.xmlialog.xml view
+        // get login_dialog.xmlialog.xml view
         LayoutInflater li = LayoutInflater.from(this);
-        View promptsView = li.inflate(R.layout.two_input_dialog, null);
+        View promptsView = li.inflate(R.layout.login_dialog, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
-        // set two_input_dialog.xmlialog.xml to alertdialog builder
+        // set login_dialog.xmlialog.xml to alertdialog builder
         alertDialogBuilder.setView(promptsView);
 
         final EditText loginUsername = (EditText) promptsView
@@ -163,14 +167,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addChatRoomDialog() {
-        // get two_input_dialog.xmlialog.xml view
+        // get login_dialog.xmlialog.xml view
         LayoutInflater li = LayoutInflater.from(this);
-        View promptsView = li.inflate(R.layout.two_input_dialog, null);
+        View promptsView = li.inflate(R.layout.add_chatroom_dialog, null);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                 this);
 
-        // set two_input_dialog.xmlialog.xml to alertdialog builder
+        // set login_dialog.xmlialog.xml to alertdialog builder
         alertDialogBuilder.setView(promptsView);
 
         final EditText chatRoomName = (EditText) promptsView

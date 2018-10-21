@@ -8,10 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Thread.sleep;
 
@@ -65,11 +68,31 @@ public class ChatActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Message message = new Message();
-                message.setMessage(chatInput.getText().toString());
-                message.setRoomNumber(chatRoom.getId());
-                message.setUserName(user.getName());
-                restService.submitMessage(message, chatRoom);
+                if(!chatInput.getText().toString().equals("")) {
+                    Message message = new Message();
+                    message.setMessage(chatInput.getText().toString());
+                    message.setRoomNumber(chatRoom.getId());
+                    message.setUserName(user.getName());
+                    chatInput.setText("");
+                    restService.submitMessage(message, chatRoom);
+                }
+            }
+        });
+        chatInput.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    if(!chatInput.getText().toString().equals("")) {
+                        Message message = new Message();
+                        message.setMessage(chatInput.getText().toString());
+                        message.setRoomNumber(chatRoom.getId());
+                        message.setUserName(user.getName());
+                        chatInput.setText("");
+                        restService.submitMessage(message, chatRoom);
+                    }
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -84,14 +107,17 @@ public class ChatActivity extends AppCompatActivity {
                 running = true;
                 final Handler handler = new Handler(Looper.getMainLooper());
                 while(running) {
-                    messages.clear();
-                    messages.addAll(restService.getAllMessagesInChatRoom(chatRoom));
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapter.notifyDataSetChanged();
-                        }
-                    });
+                    List<Message> restList = restService.getAllMessagesInChatRoom(chatRoom);
+                    if(!messages.containsAll(restList)) {
+                        messages.clear();
+                        messages.addAll(restList);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mAdapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
                     try {
                         sleep(1000);
                     } catch (InterruptedException e) {

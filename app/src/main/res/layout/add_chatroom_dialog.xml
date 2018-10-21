@@ -10,13 +10,16 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Type Your Message : "
+        android:text="@string/add_chatroom"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <EditText
         android:id="@+id/inputOne"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:hint="@string/chatroom_name"
+        android:inputType="text"
+        android:autofillHints="">
 
         <requestFocus />
 
@@ -25,7 +28,10 @@
     <EditText
         android:id="@+id/inputTwo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:hint="@string/password"
+        android:inputType="textWebPassword"
+        android:autofillHints="">
 
     </EditText>
 
